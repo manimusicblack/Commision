@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>محاسبه کمیسیون قرارداد</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+</head>
+<body>
+  
+  <div class="container">
+    <h1>محاسبه کمیسیون قرارداد</h1>
+    <h2>بر اساس نرخنامه سال ۱۴۰۴ اتحادیه املاک</h2>
+    <img class="house-img" src="Home page Pic.png" alt="کمیسیون قرارداد" />
+
+    <div class="dropdowns">
+      <div class="dropdown" data-id="province">
+        انتخاب استان
+        <div class="dropdown-options">
+          <div>تهران</div>
+        </div>
+      </div>
+      <div class="dropdown" data-id="city">
+        انتخاب شهر
+        <div class="dropdown-options">
+          <div>تهران</div>
+          <div>پیشوا</div>
+          <div>ورامین</div>
+          <div>پاکدشت</div>
+        </div>
+      </div>
+      <div class="dropdown" data-id="contract">
+        نوع قرارداد
+        <div class="dropdown-options">
+          <div>خرید و فروش</div>
+          <div>رهن و اجاره</div>
+        </div>
+      </div>
+    </div>
+    
+
+    <div class="commission-calc hidden">
+      <input type="text" id="total-price" placeholder="ثمن کل معامله را به تومان وارد نمایید" inputmode="numeric"/>
+      
+      <div class="results-box">
+        <div class="result-row">
+          <span>کمیسیون یک طرف</span>
+          <span id="commission-one-side">ریال</span>
+        </div>
+        <div class="result-row">
+          <span>۱۰٪ مالیات بر ارزش افزوده</span>
+          <span id="vat-amount">ریال</span>
+        </div>
+        <div class="result-row total">
+          <span>مبلغ قابل پرداخت هر(یک) طرف</span>
+          <span id="total-payable">
+            <span class="highlight-amount">۰</span> تومان
+          </span>
+        </div>
+      </div>
+    </div>
+                    <!-- rent section -->
+
+                    <div class="commission-calc hidden" id="rahn-ejareh-box">
+                      <input type="text" id="rahn-price" placeholder="مبلغ قرض‌الحسنه (رهن) را وارد کنید" inputmode="numeric" />
+                      <input type="text" id="rent-price" placeholder="مبلغ اجاره‌بها را وارد کنید" inputmode="numeric" />
+                    
+                      <div class="results-box">
+                        <div class="result-row">
+                          <span>کمیسیون یک طرف</span>
+                          <span id="commission-one-side-rahn">ریال</span>
+                        </div>
+                        <div class="result-row">
+                          <span>۱۰٪ مالیات بر ارزش افزوده</span>
+                          <span id="vat-amount-rahn">ریال</span>
+                        </div>
+                        <div class="result-row total">
+                          <span>مبلغ قابل پرداخت هر(یک) طرف</span>
+                          <span id="total-payable-rahn">
+                            <span class="highlight-amount">۰</span> تومان
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+
+    <section class="advisor-section">
+      <h2 class="section-title">مشاورین املاک منتخب</h2>
+      <div class="advisor-slider swiper">
+        <div class="swiper-wrapper">
+          <div class="advisor-card swiper-slide">
+            <img src="saeed ashraf.jpeg" alt="Advisor" class="advisor-img" />
+            <h3 class="advisor-name">سعید اشرف</h3>
+            <p class="advisor-info">املاک سعید</p>
+          </div>
+          <div class="advisor-card swiper-slide">
+            <img src="profile-12.jpeg" alt="Advisor" class="advisor-img" />
+            <h3 class="advisor-name">مریم شریفی</h3>
+            <p class="advisor-info">املاک آرامش</p>
+          </div>
+          <div class="advisor-card swiper-slide">
+            <img src="mojtaba hassan nasab.jpeg" alt="Advisor" class="advisor-img" />
+            <h3 class="advisor-name">مجتبی حسن نصب</h3>
+            <p class="advisor-info">املاک اسلامی</p>
+          </div>
+          <div class="advisor-card swiper-slide">
+            <img src="profile-5.jpeg" alt="Advisor" class="advisor-img" />
+            <h3 class="advisor-name">نگار رضایی</h3>
+            <p class="advisor-info">املاک طلایی</p>
+          </div>
+          <div class="advisor-card swiper-slide">
+            <img src="Esi Ashraf.jpg" alt="Advisor" class="advisor-img" />
+            <h3 class="advisor-name">اسماعیل اشرف </h3>
+            <p class="advisor-info">املاک آزاد</p>
+          </div>
+        </div>
+    
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+      </div>
+    </section>
+    <button class="support-btn" id="support-button">پشتیبانی</button>
+    <div class="footer">تمامی حقوق محفوظ برای VisionCollection می‌باشد.</div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
