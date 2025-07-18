@@ -1,5 +1,41 @@
-document.addEventListener('DOMContentLoaded', function() {
-  // Dropdowns
+document.addEventListener('DOMContentLoaded', function () {
+  // قوانین کمیسیون بر اساس شهر و نوع قرارداد
+  const commissionRules = {
+    "تهران": {
+      "خرید و فروش": (amount) => amount * 0.0025,
+      "رهن و اجاره": (rahn, rent) => {
+        const baseCommission = (rahn * 0.005) + (rent / 4);
+        return baseCommission;
+        const vat = baseCommission * 0.1;
+        const total = baseCommission + vat;
+        return total;
+
+      }
+    },
+    "ورامین": {
+      "خرید و فروش": (amount) =>
+        amount <= 1_000_000_000
+          ? amount * 0.01
+          : 1_000_000_000 * 0.01 + (amount - 1_000_000_000) * 0.005,
+      "رهن و اجاره": (rahn, rent) => ((rahn * 0.03) + rent) / 3
+    },
+    "پاکدشت": {
+      "خرید و فروش": (amount) =>
+        amount <= 1_000_000_000
+          ? amount * 0.01
+          : 1_000_000_000 * 0.01 + (amount - 1_000_000_000) * 0.005,
+      "رهن و اجاره": (rahn, rent) => ((rahn * 0.03) + rent) / 3
+    },
+    "پیشوا": {
+      "خرید و فروش": (amount) =>
+        amount <= 1_000_000_000
+          ? amount * 0.01
+          : 1_000_000_000 * 0.01 + (amount - 1_000_000_000) * 0.005,
+      "رهن و اجاره": (rahn, rent) => ((rahn * 0.03) + rent) / 3
+    },
+  };
+
+  //  دراپ‌   داون‌ها
   document.querySelectorAll('.dropdown').forEach(dropdown => {
     dropdown.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -15,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const dropdown = this.closest('.dropdown');
         dropdown.childNodes[0].textContent = this.textContent;
         dropdown.classList.remove('open');
-        checkSelections(); // بررسی شرایط بعد از انتخاب هر گزینه
+        checkSelections();
       });
     });
   });
@@ -26,8 +62,130 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Swiper برای بخش advisor
-  const advisorSwiper = new Swiper('.advisor-slider', {
+  // انتخاب‌ها
+  function getSelectedValue(id) {
+    const dropdown = document.querySelector(`.dropdown[data-id="${id}"]`);
+    if (!dropdown) return '';
+    return dropdown.childNodes[0].textContent.trim();
+  }
+
+  function checkSelections() {
+    const contract = getSelectedValue("contract");
+
+    const commissionCalc = document.querySelector('.commission-calc');
+    const rahnBox = document.getElementById('rahn-ejareh-box');
+    const houseImg = document.querySelector('.house-img');
+
+    if (contract === "خرید و فروش") {
+      commissionCalc.classList.remove("hidden");
+      rahnBox.classList.add("hidden");
+      houseImg.classList.add("hidden");
+    } else if (contract === "رهن و اجاره") {
+      commissionCalc.classList.add("hidden");
+      rahnBox.classList.remove("hidden");
+      houseImg.classList.add("hidden");
+    } else {
+      commissionCalc.classList.add("hidden");
+      rahnBox.classList.add("hidden");
+      houseImg.classList.remove("hidden");
+    }
+  }
+
+  // تبدیل اعداد
+  function toPersianDigits(str) {
+    const persianDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    return str.replace(/\d/g, d => persianDigits[d]);
+  }
+
+  function toEnglishDigits(str) {
+    const persianDigits = /[۰-۹]/g;
+    return str.replace(persianDigits, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+  }
+
+  // خرید و فروش
+  const totalPriceInput = document.getElementById('total-price');
+  const commissionOneSide = document.getElementById('commission-one-side');
+  const vatAmount = document.getElementById('vat-amount');
+  const totalPayable = document.getElementById('total-payable');
+
+  if (totalPriceInput) {
+    totalPriceInput.addEventListener('input', function () {
+      const rawValue = toEnglishDigits(this.value).replace(/\D/g, '');
+      const formatted = rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      this.value = toPersianDigits(formatted);
+      const amount = parseFloat(rawValue) || 0;
+
+      const city = getSelectedValue("city");
+      const contract = getSelectedValue("contract");
+
+      let commission = 0;
+      if (commissionRules[city] && commissionRules[city][contract]) {
+        commission = commissionRules[city][contract](amount);
+      }
+
+      const vat = commission * 0.1;
+      const total = commission + vat;
+
+      const formatOutput = (val) =>
+        toPersianDigits(Math.round(val).toLocaleString('fa-IR').replace(/,/g, '.'));
+
+      commissionOneSide.textContent = `${formatOutput(commission)} تومان`;
+      vatAmount.textContent = `${formatOutput(vat)} تومان`;
+      totalPayable.innerHTML = `<span class="highlight-amount">${formatOutput(total)}</span> تومان`;
+    });
+  }
+
+  // رهن و اجاره
+  const rahnInput = document.getElementById('rahn-price');
+  const rentInput = document.getElementById('rent-price');
+  const commissionOneSideRahn = document.getElementById('commission-one-side-rahn');
+  const vatAmountRahn = document.getElementById('vat-amount-rahn');
+  const totalPayableRahn = document.getElementById('total-payable-rahn');
+
+  function calculateRahnEjareh() {
+    const rawRahn = toEnglishDigits(rahnInput.value).replace(/\D/g, '');
+    const rawRent = toEnglishDigits(rentInput.value).replace(/\D/g, '');
+    const rahn = parseFloat(rawRahn) || 0;
+    const rent = parseFloat(rawRent) || 0;
+
+    const city = getSelectedValue("city");
+    const contract = "رهن و اجاره";
+
+    let commission = 0;
+    if (commissionRules[city] && commissionRules[city][contract]) {
+      commission = commissionRules[city][contract](rahn, rent);
+    }
+
+    const vat = commission * 0.1;
+    const total = commission + vat;
+
+    const formatOutput = (val) =>
+      toPersianDigits(Math.round(val).toLocaleString('fa-IR').replace(/,/g, '.'));
+
+    commissionOneSideRahn.textContent = `${formatOutput(commission)} تومان`;
+    vatAmountRahn.textContent = `${formatOutput(vat)} تومان`;
+    totalPayableRahn.innerHTML = `<span class="highlight-amount">${formatOutput(total)}</span> تومان`;
+  }
+
+  rahnInput.addEventListener('input', function () {
+    let rawValue = toEnglishDigits(this.value).replace(/\D/g, '');
+    this.value = toPersianDigits(rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+    calculateRahnEjareh();
+  });
+
+  rentInput.addEventListener('input', function () {
+    let rawValue = toEnglishDigits(this.value).replace(/\D/g, '');
+    this.value = toPersianDigits(rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+    calculateRahnEjareh();
+  });
+
+  // دکمه پشتیبانی
+  document.getElementById('support-button').addEventListener('click', function () {
+    window.open('https://t.me/Tehrancity2024', '_blank');
+  });
+
+  // اسلایدر مشاورین
+  new Swiper('.advisor-slider', {
     loop: true,
     autoplay: {
       delay: 1000,
@@ -45,159 +203,50 @@ document.addEventListener('DOMContentLoaded', function() {
       nextEl: '.swiper-button-next',
       prevEl: '.swiper-button-prev',
     },
-
     breakpoints: {
-      0: {
-        slidesPerView: 1,
-      },
-      768: {
-        slidesPerView: 2,
-      },
-      1024: {
-        slidesPerView: 3,
-      },
+      0: { slidesPerView: 1 },
+      768: { slidesPerView: 2 },
+      1024: { slidesPerView: 3 },
     }
   });
 
-  function getSelectedValue(id) {
-    const dropdown = document.querySelector(`.dropdown[data-id="${id}"]`);
-    if (!dropdown) {
-      console.error(`Dropdown with id ${id} not found`);
-      return '';
-    }
-    const value = dropdown.childNodes[0].textContent.trim();
-    console.log(`Selected value for ${id}:`, value);
-    return value;
-  }
+});
 
-  function checkSelections() {
-    const province = getSelectedValue("province");
-    const city = getSelectedValue("city");
-    const contract = getSelectedValue("contract");
+// POPUP MODAL
 
-    const commissionCalc = document.querySelector('.commission-calc');
-    const houseImg = document.querySelector('.house-img');
+// باز و بسته کردن مودال
+const modal = document.getElementById("advisor-modal");
+const modalImg = document.getElementById("modal-img");
+const modalName = document.getElementById("modal-name");
+const modalInfo = document.getElementById("modal-info");
+const modalCity = document.getElementById("modal-city");
+const modalOffice = document.getElementById("modal-office");
+const modalContact = document.getElementById("modal-contact");
+const closeBtn = document.querySelector(".close-btn");
 
-    const conditionsMet = province === "تهران" && city === "پیشوا" && contract === "خرید و فروش";
-    const rahnBox = document.getElementById('rahn-ejareh-box');
+closeBtn.addEventListener("click", () => {
+  modal.classList.add("hidden");
+});
 
+// وقتی روی کارت مشاور کلیک میشه، پاپ‌آپ باز بشه
+const advisorCards = document.querySelectorAll(".advisor-card");
+advisorCards.forEach(card => {
+  card.addEventListener("click", () => {
+    const img = card.querySelector("img").src;
+    const name = card.querySelector(".advisor-name").textContent;
+    const info = card.querySelector(".advisor-info").textContent;
+    const city = card.querySelector(".advisor-city").textContent;
 
-    if (conditionsMet) {
-      commissionCalc.classList.remove("hidden");
-      houseImg.classList.add("hidden"); // پنهان کردن تصویر
-    }
-     else if (contract === "رهن و اجاره") {
-  commissionCalc.classList.add("hidden");
-  rahnBox.classList.remove("hidden");
-  houseImg.classList.add("hidden");
-    }
-    else {
-      commissionCalc.classList.add("hidden");
-      rahnBox.classList.add("hidden");
-      houseImg.classList.remove("hidden");
-    }
-  }
+    // لینک تلگرام یا واتساپ هر مشاور - اینجا یک لینک پیشفرض گذاشتم، اگه لینک هر مشاور داری بذار
+    const telegramLink = "https://t.me/Tehrancity2024";
 
-  const totalPriceInput = document.getElementById('total-price');
+    modalImg.src = img;
+    modalName.textContent = name;
+    modalInfo.textContent = info;
+    modalCity.textContent = `شهر: ${city}`;
+    modalOffice.textContent = `دفتر: ${info}`;
+    modalContact.href = telegramLink;
 
-  // تبدیل اعداد انگلیسی به فارسی
-  function toPersianDigits(str) {
-    const persianDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-    return str.replace(/\d/g, d => persianDigits[d]);
-  }
-
-  // تبدیل اعداد فارسی به انگلیسی
-  function toEnglishDigits(str) {
-    const persianDigits = /[۰-۹]/g;
-    return str.replace(persianDigits, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-  }
-
-  if (totalPriceInput) {
-    totalPriceInput.addEventListener('input', function () {
-      // تبدیل اعداد فارسی به انگلیسی و حذف غیر عدد
-      let rawValue = toEnglishDigits(this.value).replace(/\D/g, '');
-
-      // فرمت هزارگان با نقطه
-      const formatted = rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-
-      // نمایش در input با عدد فارسی و نقطه
-      this.value = toPersianDigits(formatted);
-
-      // ادامه محاسبه
-      const amount = parseFloat(rawValue) || 0;
-
-      const commissionOneSide = document.getElementById('commission-one-side');
-      const vatAmount = document.getElementById('vat-amount');
-      const totalPayable = document.getElementById('total-payable');
-
-      let commission = 0;
-
-      if (amount <= 1_000_000_000) {
-        commission = amount * 0.005;
-      } else {
-        const firstPart = 1_000_000_000 * 0.005;
-        const secondPart = (amount - 1_000_000_000) * 0.0025;
-        commission = firstPart + secondPart;
-      }
-
-      const vat = commission * 0.1;
-      const total = commission + vat;
-
-      const formatOutput = (val) =>
-        toPersianDigits(Math.round(val).toLocaleString('fa-IR').replace(/,/g, '.'));
-
-      commissionOneSide.textContent = `${formatOutput(commission)} تومان`;
-      vatAmount.textContent = `${formatOutput(vat)} تومان`;
-      totalPayable.innerHTML = `<span class="highlight-amount">${formatOutput(total)}</span> تومان`;
-    });
-  }
-
-  const rahnInput = document.getElementById('rahn-price');
-  const rentInput = document.getElementById('rent-price');
-  const commissionOneSideRahn = document.getElementById('commission-one-side-rahn');
-  const vatAmountRahn = document.getElementById('vat-amount-rahn');
-  const totalPayableRahn = document.getElementById('total-payable-rahn');
-  
-  function calculateRahnEjareh() {
-    const rawRahn = toEnglishDigits(rahnInput.value).replace(/\D/g, '');
-    const rawRent = toEnglishDigits(rentInput.value).replace(/\D/g, '');
-    const rahn = parseFloat(rawRahn) || 0;
-    const rent = parseFloat(rawRent) || 0;
-  
-    // فرمول محاسبه کمیسیون برای رهن و اجاره
-    const commission = (rahn * 0.01) + (rent * 0.25);
-    const vat = commission * 0.10;
-    const total = commission + vat;
-  
-    const formatOutput = (val) =>
-      toPersianDigits(Math.round(val).toLocaleString('fa-IR').replace(/,/g, '.'));
-  
-    commissionOneSideRahn.textContent = `${formatOutput(commission)} تومان`;
-    vatAmountRahn.textContent = `${formatOutput(vat)} تومان`;
-    totalPayableRahn.innerHTML = `<span class="highlight-amount">${formatOutput(total)}</span> تومان`;
-  }
-  
-  rahnInput.addEventListener('input', calculateRahnEjareh);
-  rentInput.addEventListener('input', calculateRahnEjareh);
-  
-  rahnInput.addEventListener('input', function () {
-    let rawValue = toEnglishDigits(this.value).replace(/\D/g, '');
-    const formatted = rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    this.value = toPersianDigits(formatted);
-    calculateRahnEjareh(); // محاسبه کمیسیون
+    modal.classList.remove("hidden");
   });
-  
-  rentInput.addEventListener('input', function () {
-    let rawValue = toEnglishDigits(this.value).replace(/\D/g, '');
-    const formatted = rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    this.value = toPersianDigits(formatted);
-    calculateRahnEjareh(); // محاسبه کمیسیون
-  });
-  
-  document.getElementById('support-button').addEventListener('click', function () {
-    window.open('https://t.me/Tehrancity2024', '_blank');
-  });
-  
-
-
 });
