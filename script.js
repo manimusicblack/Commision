@@ -6,10 +6,6 @@ document.addEventListener('DOMContentLoaded', function () {
       "رهن و اجاره": (rahn, rent) => {
         const baseCommission = (rahn * 0.005) + (rent / 4);
         return baseCommission;
-        const vat = baseCommission * 0.1;
-        const total = baseCommission + vat;
-        return total;
-
       }
     },
     "ورامین": {
@@ -33,9 +29,16 @@ document.addEventListener('DOMContentLoaded', function () {
           : 1_000_000_000 * 0.01 + (amount - 1_000_000_000) * 0.005,
       "رهن و اجاره": (rahn, rent) => ((rahn * 0.03) + rent) / 3
     },
+    "شهریار": {
+      "خرید و فروش": (amount) =>
+        amount <= 1_000_000_000
+          ? amount * 0.05
+          : 1_000_000_000 * 0.05 + (amount - 1_000_000_000) * 0.005,
+      "رهن و اجاره": (rahn, rent) => ((rahn * 0.03) + rent) / 3
+    },
   };
 
-  //  دراپ‌   داون‌ها
+  //  دراپ‌دان‌ها
   document.querySelectorAll('.dropdown').forEach(dropdown => {
     dropdown.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -213,8 +216,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // POPUP MODAL
-
-// باز و بسته کردن مودال
 const modal = document.getElementById("advisor-modal");
 const modalImg = document.getElementById("modal-img");
 const modalName = document.getElementById("modal-name");
@@ -224,11 +225,13 @@ const modalOffice = document.getElementById("modal-office");
 const modalContact = document.getElementById("modal-contact");
 const closeBtn = document.querySelector(".close-btn");
 
+// لیست مشاورهایی که دکمه گفتگو برایشان غیرفعال است
+const noContactAdvisors = ["راضیه ناصحی", "مریم شریفی", "مجتبی حسن نصب","سعید اشرف","نگار رضایی","اسماعیل اشرف"]; // اسم مشاورها را اینجا اضافه کن
+
 closeBtn.addEventListener("click", () => {
   modal.classList.add("hidden");
 });
 
-// وقتی روی کارت مشاور کلیک میشه، پاپ‌آپ باز بشه
 const advisorCards = document.querySelectorAll(".advisor-card");
 advisorCards.forEach(card => {
   card.addEventListener("click", () => {
@@ -237,7 +240,6 @@ advisorCards.forEach(card => {
     const info = card.querySelector(".advisor-info").textContent;
     const city = card.querySelector(".advisor-city").textContent;
 
-    // لینک تلگرام یا واتساپ هر مشاور - اینجا یک لینک پیشفرض گذاشتم، اگه لینک هر مشاور داری بذار
     const telegramLink = "https://t.me/Tehrancity2024";
 
     modalImg.src = img;
@@ -245,7 +247,17 @@ advisorCards.forEach(card => {
     modalInfo.textContent = info;
     modalCity.textContent = `شهر: ${city}`;
     modalOffice.textContent = `دفتر: ${info}`;
-    modalContact.href = telegramLink;
+
+    // بررسی و غیرفعال کردن دکمه در صورت نیاز
+    if (noContactAdvisors.includes(name.trim())) {
+      modalContact.removeAttribute("href");
+      modalContact.classList.add("disabled");
+      modalContact.textContent = " گفتگو غیرفعال";
+    } else {
+      modalContact.href = telegramLink;
+      modalContact.classList.remove("disabled");
+      modalContact.textContent = "گفتگو در تلگرام";
+    }
 
     modal.classList.remove("hidden");
   });

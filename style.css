@@ -559,3 +559,9 @@ h2.section-title {
     font-size: 1.2rem;
   }
 }
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.2;
+  cursor: not-allowed;
+}
